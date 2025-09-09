@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .form-section {
+            padding: 30px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .tasks-section {
+            padding: 30px;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #3498db;
+            transition: transform 0.2s;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+        }
+
+        .task-item.high {
+            border-left-color: #e74c3c;
+        }
+
+        .task-item.medium {
+            border-left-color: #f39c12;
+        }
+
+        .task-item.low {
+            border-left-color: #27ae60;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .task-priority {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .priority-high {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .priority-medium {
+            background: #f39c12;
+            color: white;
+        }
+
+        .priority-low {
+            background: #27ae60;
+            color: white;
+        }
+
+        .task-description {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .task-actions button {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #f39c12;
+            color: white;
+        }
+
+        .status-in_progress {
+            background: #3498db;
+            color: white;
+        }
+
+        .status-completed {
+            background: #27ae60;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .task-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .task-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Task Manager</h1>
+            <p>Build with Node.js, Express & MySQL</p>
+        </div>
+
+        <div class="form-section">
+            <h2>Add New Task</h2>
+            <div id="message"></div>
+            
+            <form id="taskForm">
+                <div class="form-group">
+                    <label for="title">Task Title *</label>
+                    <input type="text" id="title" name="title" required placeholder="Enter task title">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" placeholder="Enter task description (optional)"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="priority">Priority</label>
+                    <select id="priority" name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Add Task</button>
+            </form>
+        </div>
+
+        <div class="tasks-section">
+            <h2>Your Tasks</h2>
+            <div id="tasksContainer">
+                <div class="loading">Loading tasks...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL
+        const API_URL = '/api/tasks';
+
+        // DOM elements
+        const taskForm = document.getElementById('taskForm');
+        const tasksContainer = document.getElementById('tasksContainer');
+        const messageDiv = document.getElementById('message');
+
+        // Show message function
+        function showMessage(message, type = 'success') {
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Fetch and display tasks
+        async function loadTasks() {
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayTasks(result.data);
+                } else {
+                    throw new Error(result.error || 'Failed to load tasks');
+                }
+            } catch (error) {
+                console.error('Load tasks error:', error);
+                tasksContainer.innerHTML = `
+                    <div class="error">
+                        Failed to load tasks: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Display tasks in the UI
+        function displayTasks(tasks) {
+            if (tasks.length === 0) {
+                tasksContainer.innerHTML = '<p>No tasks found. Add your first task above!</p>';
+                return;
+            }
+
+            const tasksHTML = tasks.map(task => `
+                <div class="task-item ${task.priority}">
+                    <div class="task-header">
+                        <div class="task-title">${task.title}</div>
+                        <div class="task-priority priority-${task.priority}">${task.priority}</div>
+                    </div>
+                    
+                    ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span class="status-badge status-${task.status}">${task.status.replace('_', ' ')}</span>
+                        <small>Created: ${new Date(task.created_at).toLocaleDateString()}</small>
+                    </div>
+                    
+                    <div class="task-actions">
+                        <button class="btn btn-success" onclick="updateTaskStatus(${task.id}, 'completed')">
+                            Complete
+                        </button>
+                        <button class="btn" onclick="updateTaskStatus(${task.id}, 'in_progress')">
+                            In Progress
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteTask(${task.id})">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            tasksContainer.innerHTML = tasksHTML;
+        }
+
+        // Add new task
+        taskForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(taskForm);
+            const taskData = {
+                title: formData.get('title').trim(),
+                description: formData.get('description').trim(),
+                priority: formData.get('priority')
+            };
+
+            if (!taskData.title) {
+                showMessage('Please enter a task title', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Task added successfully!');
+                    taskForm.reset();
+                    loadTasks(); // Reload tasks
+                } else {
+                    throw new Error(result.error || 'Failed to add task');
+                }
+            } catch (error) {
+                console.error('Add task error:', error);
+                showMessage('Failed to add task: ' + error.message, 'error');
+            }
+        });
+
+        // Update task status
+        async function updateTaskStatus(taskId, status) {
+            try {
+                // First get the current task data
+                const getResponse = await fetch(`${API_URL}/${taskId}`);
+                const getResult = await getResponse.json();
+                
+                if (!getResult.success) {
+                    throw new Error('Failed to get task data');
+                }
+                
+                const currentTask = getResult.data;
+                
+                // Update with new status
+                const response = await fetch(`${API_URL}/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: currentTask.title,
+                        description: currentTask.description,
+                        priority: currentTask.priority,
+                        status: status
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage(`Task marked as ${status.replace('_', ' ')}`);
+                    loadTasks(); // Reload tasks
+                } else {
+                    throw new Error(result.error || 'Failed to update task');
+                }
+            } catch (error) {
+                console.error('Update task error:', error);
+                showMessage('Failed to update task: ' + error.message, 'error');
+            }
+        }
+
+        // Delete task
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${taskId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('Task deleted successfully!');
+                    loadTasks(); // Reload tasks
+                } else {
+                    throw new Error(result.error || 'Failed to delete task');
+                }
+            } catch (error) {
+                console.error('Delete task error:', error);
+                showMessage('Failed to delete task: ' + error.message, 'error');
+            }
+        }
+
+        // Load tasks when page loads
+        document.addEventListener('DOMContentLoaded', loadTasks);
+    </script>
+</body>
+</html>
