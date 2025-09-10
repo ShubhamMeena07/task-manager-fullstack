@@ -16,7 +16,7 @@ app.use(express.static('public')); // Serves static files (HTML, CSS, JS)
 const dbConfig = {
   host: 'localhost',     // MySQL server location
   user: 'root',          // MySQL username
-  password: 'Shub@1207meena',   // Your MySQL password
+  password: '',   // Your MySQL password
   database: 'taskmanager' // Database name
 };
 
